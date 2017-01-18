@@ -3,6 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>501</title>
+	<link rel="icon" type="image/png" href="/static/assets/favicon.png">
 	<style>
 	.content{
 		width: 600px;
