@@ -1,16 +1,16 @@
 ## 根据swagger spec 生成markdown文档
 
 ```sh
-go get -v github.com/hudangwei/swag2md
+go get -v github.com/hudangwei/apidoctool
 ```
 
 ```sh
-./swag2md -h
+./apidoctool -h
 NAME:
-   swagger2markdown - generate markdown with swagger spec
+   apidoctool - generate markdown docs with swagger spec
 
 USAGE:
-   swag2md [global options] command [command options] [arguments...]
+   apidoctool [global options] command [command options] [arguments...]
 
 VERSION:
    0.0.0
@@ -27,5 +27,7 @@ GLOBAL OPTIONS:
 
 ### 示例
 ```sh
-swag2md -f http://xxxxxxxx.com/v2/api-docs
+apidoctool -f http://xxxxxxxx.com/v2/api-docs
+或
+apidoctool -f swagger.json
 ```
