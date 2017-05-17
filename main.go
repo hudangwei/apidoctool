@@ -1,11 +1,20 @@
 package main
 
 import (
-	"github.com/astaxie/beego"
-	_ "github.com/hudangwei/apidoctool/initial"
-    _ "github.com/hudangwei/apidoctool/routers"
+	"log"
+
+	"github.com/urfave/cli"
 )
 
 func main() {
-	beego.Run()
+
+	app := NewConfigurator()
+	app.App().Action = func(c *cli.Context) error {
+		conf := app.Get()
+		GenerateMarkDownFile(conf.FilePath)
+		return nil
+	}
+	if err := app.Run(); err != nil {
+		log.Fatalf("error on run app, %v", err)
+	}
 }
