@@ -37,6 +37,7 @@ func NewAPIService(api *API) *APIService {
 type ServiceInterface struct {
 	OperationID string
 	Description string
+	Tag         string
 	Method      string
 	URI         string
 	Params      []Parameter
@@ -53,6 +54,7 @@ func NewServiceInterface() *ServiceInterface {
 func (s *ServiceInterface) loadData(uri, method string, p *Operation, d map[string]Definition) {
 	s.OperationID = p.OperationID
 	s.Description = p.Description
+	s.Tag = p.Tags[0]
 	s.Method = method
 	s.URI = uri
 	if len(p.Parameters) > 0 {
@@ -66,13 +68,13 @@ func (s *ServiceInterface) loadData(uri, method string, p *Operation, d map[stri
 
 			for k, v := range d[ref.(string)].Properties {
 				if v.MyRef != "" {
-					v.Type = d[v.MyRef].Type + " <" + d[v.MyRef].Title + ">"
+					v.Type = d[v.MyRef].Type + " (" + d[v.MyRef].Title + ")"
 
 					s.Definitions[d[v.MyRef].Title] = d[v.MyRef]
 				}
 				if v.Type == "array" {
 					if _, ok := v.Items["myRef"]; ok {
-						v.Type = "array <" + d[v.Items["myRef"]].Title + ">"
+						v.Type = "array (" + d[v.Items["myRef"]].Title + ")"
 
 						s.Definitions[d[v.Items["myRef"]].Title] = d[v.Items["myRef"]]
 
@@ -92,13 +94,13 @@ func (s *ServiceInterface) loadData(uri, method string, p *Operation, d map[stri
 				if items, ok := resp.Schema["items"]; ok {
 					for k, v := range d[items.(map[string]interface{})["myRef"].(string)].Properties {
 						if v.MyRef != "" {
-							v.Type = d[v.MyRef].Type + " <" + d[v.MyRef].Title + ">"
+							v.Type = d[v.MyRef].Type + " (" + d[v.MyRef].Title + ")"
 
 							s.Definitions[d[v.MyRef].Title] = d[v.MyRef]
 						}
 						if v.Type == "array" {
 							if _, ok := v.Items["myRef"]; ok {
-								v.Type = "array <" + d[v.Items["myRef"]].Title + ">"
+								v.Type = "array (" + d[v.Items["myRef"]].Title + ")"
 
 								s.Definitions[d[v.Items["myRef"]].Title] = d[v.Items["myRef"]]
 

@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path"
 	"strings"
 )
 
@@ -24,16 +26,26 @@ func GenerateMarkDownFile(filename string) error {
 		return err
 	}
 
+	currpath, _ := os.Getwd()
+	for _, v := range api.Tags {
+		mdPath := path.Join(currpath, v.Name)
+		os.MkdirAll(mdPath, 0755)
+	}
 	apiservice := NewAPIService(api)
 
+	weightMap := make(map[string]int)
 	for _, serviceInterface := range apiservice.ServiceInterfaces {
+		serviceInterface.OperationID = strings.Replace(serviceInterface.OperationID, ".", "_", -1)
+		weightMap[serviceInterface.Tag]++
 		markdownDoc := ""
-
+		hugoHeader := fmt.Sprintf("+++\ntitle=\"%s\"\nurl=\"/%s/%s\"\n[menu.side]\n  name=\"%s\"\n  parent=\"%s\"\n  weight=%d\n+++\n\n",
+			serviceInterface.Description, serviceInterface.Tag, strings.ToLower(serviceInterface.OperationID), serviceInterface.Description, serviceInterface.Tag, weightMap[serviceInterface.Tag])
+		markdownDoc += hugoHeader
 		desc := fmt.Sprintf("## %s\n\n", serviceInterface.Description)
 		markdownDoc += desc
 		method := fmt.Sprintf("**请求方式**\n\n`%s`\n\n", serviceInterface.Method)
 		markdownDoc += method
-		uri := fmt.Sprintf("**请求路径**\n\n`%s`\n\n", serviceInterface.URI)
+		uri := fmt.Sprintf("**请求路径**\n\n`%s`\n\n", api.BasePath+serviceInterface.URI)
 		markdownDoc += uri
 		if len(serviceInterface.Params) > 0 {
 			markdownDoc += "**请求参数说明**\n\n|参数名|必选|参数方式|类型|说明|\n| :---- | :--- | :----- | :----- | ---------------------------------------- |\n"
@@ -53,7 +65,9 @@ func GenerateMarkDownFile(filename string) error {
 
 		markdownDoc += parseSchema(api, serviceInterface.Definitions)
 
-		ioutil.WriteFile(serviceInterface.OperationID+".md", []byte(markdownDoc), 0666)
+		fpath := path.Join(serviceInterface.Tag, strings.ToLower(serviceInterface.OperationID)+".md")
+
+		ioutil.WriteFile(fpath, []byte(markdownDoc), 0666)
 	}
 
 	return nil
@@ -67,12 +81,12 @@ func parseSchema(api *API, defs map[string]Definition) string {
 			markdownDoc += fmt.Sprintf("\n**%s 数据结构**\n\n|成员|类型|说明|\n| :----- | :----- | ------------------------ |\n", k)
 			for k, v := range v.Properties {
 				if v.MyRef != "" {
-					v.Type = api.Definitions[v.MyRef].Type + " <" + api.Definitions[v.MyRef].Title + ">"
+					v.Type = api.Definitions[v.MyRef].Type + " (" + api.Definitions[v.MyRef].Title + ")"
 					obj[api.Definitions[v.MyRef].Title] = api.Definitions[v.MyRef]
 				}
 				if v.Type == "array" {
 					if _, ok := v.Items["myRef"]; ok {
-						v.Type = "array <" + api.Definitions[v.Items["myRef"]].Title + ">"
+						v.Type = "array (" + api.Definitions[v.Items["myRef"]].Title + ")"
 						obj[api.Definitions[v.Items["myRef"]].Title] = api.Definitions[v.Items["myRef"]]
 					}
 				}
