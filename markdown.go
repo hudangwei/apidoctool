@@ -83,11 +83,19 @@ func parseSchema(api *API, defs map[string]Definition) string {
 				if v.MyRef != "" {
 					v.Type = api.Definitions[v.MyRef].Type + " (" + api.Definitions[v.MyRef].Title + ")"
 					obj[api.Definitions[v.MyRef].Title] = api.Definitions[v.MyRef]
+
+					if _, ok := defs[api.Definitions[v.MyRef].Title]; ok {
+						delete(obj, api.Definitions[v.MyRef].Title)
+					}
 				}
 				if v.Type == "array" {
 					if _, ok := v.Items["myRef"]; ok {
 						v.Type = "array (" + api.Definitions[v.Items["myRef"]].Title + ")"
 						obj[api.Definitions[v.Items["myRef"]].Title] = api.Definitions[v.Items["myRef"]]
+
+						if _, ok := defs[api.Definitions[v.Items["myRef"]].Title]; ok {
+							delete(obj, api.Definitions[v.Items["myRef"]].Title)
+						}
 					}
 				}
 				param := fmt.Sprintf("|%s|%s|%s|\n", k, v.Type, v.Description)
